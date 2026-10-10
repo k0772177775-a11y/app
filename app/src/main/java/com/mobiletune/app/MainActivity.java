@@ -202,8 +202,10 @@ public class MainActivity extends Activity {
         addSectionTitle("הקבצים ששמרת");
         if(documents.isEmpty()) addCard(content,text("עדיין לא נוספו מסמכים.",14,muted,false));
         for(String doc:documents) {
-            LinearLayout r=row(); TextView label=text("▣  "+doc,13,ink,false); r.addView(label,new LinearLayout.LayoutParams(0,-2,1));
-            Button open=button("פתיחה",purple,Color.WHITE); r.addView(open,lp(75,40)); open.setOnClickListener(v->{Toast.makeText(this,"פתח את הקובץ דרך בורר הקבצים של המכשיר.",Toast.LENGTH_SHORT).show();});
+            String[] parts=doc.split("§",2); String displayName=parts[0];
+            LinearLayout r=row(); TextView label=text("▣  "+displayName,13,ink,false); r.addView(label,new LinearLayout.LayoutParams(0,-2,1));
+            Button open=button("פתיחה",purple,Color.WHITE); r.addView(open,lp(75,40));
+            open.setOnClickListener(v->{if(parts.length>1){try{Intent openIntent=new Intent(Intent.ACTION_VIEW,Uri.parse(parts[1]));openIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);startActivity(openIntent);}catch(Exception e){Toast.makeText(this,"אין אפליקציה מתאימה לפתיחת הקובץ",Toast.LENGTH_SHORT).show();}}else{Toast.makeText(this,"בחר את הקובץ שוב כדי לפתוח אותו",Toast.LENGTH_SHORT).show();}});
             addCard(content,r);
         }
         TextView note=text("הערה: הגרסה הזו מארגנת קבצים שבוחרים. OCR אוטומטי וסריקה מקצועית דורשים תוספת נפרדת.",12,muted,false); pad(note,5,5,5,10); content.addView(note);
@@ -258,7 +260,7 @@ public class MainActivity extends Activity {
             Uri uri=data.getData();
             try { getContentResolver().takePersistableUriPermission(uri,Intent.FLAG_GRANT_READ_URI_PERMISSION); } catch(Exception ignored) {}
             String label=uri.getLastPathSegment(); if(label==null||label.trim().isEmpty()) label="מסמך חדש";
-            documents.add(label); saveList("documents",documents); Toast.makeText(this,"המסמך נוסף לרשימה",Toast.LENGTH_SHORT).show(); showTab("מסמכים");
+            documents.add(label+"§"+uri.toString()); saveList("documents",documents); Toast.makeText(this,"המסמך נוסף לרשימה",Toast.LENGTH_SHORT).show(); showTab("מסמכים");
         }
     }
 }
